@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const distHtmlPath = path.join(__dirname, 'dist', 'index.html');
+const distHtmlPath = path.join(__dirname, 'dist', 'one-line-game.html');
 const distUriPath = path.join(__dirname, 'dist', 'data_uri.txt');
 
 if (!fs.existsSync(distHtmlPath)) {

@@ -5,7 +5,7 @@
 [![Live Size](https://img.shields.io/badge/Data%20URI-3%2C069%20bytes-brightgreen?style=flat-square)](dist/data_uri.txt)
 [![Byte Budget](https://img.shields.io/badge/Budget-%E2%89%A4%203%2C072%20bytes-blue?style=flat-square)](dist/data_uri.txt)
 [![Hack Club Bites](https://img.shields.io/badge/Hack%20Club%20Bites-%2B22%20Points-orange?style=flat-square)](#-hack-club-bites-breakdown-22-points)
-[![Tech](https://img.shields.io/badge/Built%20With-Canvas%20%2B%20WebAudio-purple?style=flat-square)](src/index.html)
+[![Tech](https://img.shields.io/badge/Built%20With-Canvas%20%2B%20WebAudio-purple?style=flat-square)](src/unedited-game.html)
 [![License](https://img.shields.io/badge/License-MIT-lightgrey?style=flat-square)](LICENSE)
 
 ---
@@ -83,12 +83,12 @@ $$\Delta y = 0.5 - 0.5 \cdot \cos(t \cdot 0.2)$$
 │   └── workflows/
 │       └── deploy.yml       # Automatic GitHub Pages deployment
 ├── dist/
-│   ├── index.html           # Minified production build (3,044 bytes)
+│   ├── one-line-game.html   # Minified production build (3,044 bytes)
 │   └── data_uri.txt         # Executable 1-line Data URI (3,069 bytes)
 ├── src/
-│   └── index.html           # Fully readable, well-commented developer source
+│   └── unedited-game.html   # Fully readable, well-commented developer source
 ├── build.mjs                # Size verification & syntax testing script
-├── index.html               # Web launcher for instant browser play
+├── game.html                # Web launcher for instant browser play
 ├── package.json             # NPM scripts (build, test, dev)
 ├── LICENSE                  # MIT License
 └── README.md                # Project documentation
