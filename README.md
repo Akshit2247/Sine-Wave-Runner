@@ -1,10 +1,10 @@
-# Sine Drift 3D
+# Sine Wave Runner
 
 A 3D retro arcade game that runs directly in your browser's address bar as a single Data URI under 3KB. No images, no libraries, no downloads—everything is rendered on the fly using HTML5 Canvas, Web Audio API, and trigonometric math.
 
-![Sine Drift 3D Gameplay Preview](preview.png)
+![Sine Wave Runner Gameplay Preview](preview.png)
 
-Sine Drift 3D is built for the **Hack Club Bites** challenge with a strict 3,072-byte size budget. You fly a geometric spacecraft over a rolling 3D sine-wave grid, collect spinning golden coins, and weave through incoming obstacle drones while dynamic day/night lighting shifts overhead.
+Sine Wave Runner is built for the **Hack Club Bites** challenge with a strict 3,072-byte size budget. You fly a geometric spacecraft over a rolling 3D sine-wave grid, collect spinning golden coins, and weave through incoming obstacle drones while dynamic day/night lighting shifts overhead.
 
 ---
 
