@@ -41,7 +41,7 @@ Open [src/index.html](src/index.html) in your browser.
 
 ## Building
 
-To verify that the code meets the Hack Club Bites size budget ($\le 3,072$ bytes) and passes JavaScript syntax validation:
+To verify that the code meets the Hack Club SHRINK project size budget ($\le 3,072$ bytes) and passes the Javascript syntax validation:
 
 ```bash
 npm install
