@@ -1,31 +1,14 @@
 {
   "name": "sine-drift-3d",
   "version": "1.0.0",
-  "description": "An interactive 3D mathematical sine wave retro arcade game in a single 3KB Data URI with procedural audio, day/night cycles, and drone dodging. Built for Hack Club Bites.",
-  "main": "src/unedited-game.html",
+  "description": "A 3D retro arcade runner in under 3KB Data URI with procedural audio and undulating sine terrain.",
+  "main": "src/index.html",
   "type": "module",
   "scripts": {
     "build": "node build.mjs",
     "test": "node build.mjs",
-    "dev": "node -e \"import('http').then(h => h.createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/html'}); res.end(require('fs').readFileSync('dist/one-line-game.html')); }).listen(8080, () => console.log('Serving Sine Drift 3D on http://localhost:8080')));\""
+    "dev": "node -e \"import('http').then(h => h.createServer((req, res) => { res.writeHead(200, {'Content-Type': 'text/html'}); res.end(require('fs').readFileSync('dist/one-line-game.html')); }).listen(8080, () => console.log('Running on http://localhost:8080')));\""
   },
-  "keywords": [
-    "canvas",
-    "webaudio",
-    "3d",
-    "retro-arcade",
-    "demoscene",
-    "code-golf",
-    "game-development",
-    "data-uri",
-    "math-art",
-    "hackclub",
-    "bites"
-  ],
-  "author": "Hack Club Builder",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/USER/sine-drift-3d.git"
-  }
+  "author": "Akshit",
+  "license": "MIT"
 }

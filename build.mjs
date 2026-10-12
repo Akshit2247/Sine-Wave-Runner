@@ -6,7 +6,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const distHtmlPath = path.join(__dirname, 'dist', 'one-line-game.html');
-const distUriPath = path.join(__dirname, 'dist', 'data_uri.txt');
+const distUriPath = path.join(__dirname, 'dist', 'uri.txt');
 
 if (!fs.existsSync(distHtmlPath)) {
   console.error(`Error: File not found: ${distHtmlPath}`);
@@ -20,7 +20,7 @@ const rawBytes = Buffer.byteLength(htmlCode, 'utf8');
 const dataUri = 'data:text/html,' + htmlCode.replace(/%/g, '%25');
 const uriBytes = Buffer.byteLength(dataUri, 'utf8');
 
-// Write out data_uri.txt
+// Write out uri.txt
 fs.writeFileSync(distUriPath, dataUri, 'utf8');
 
 // Verify JS Syntax
