@@ -1,0 +1,25 @@
+# Node & Dependencies
+node_modules/
+package-lock.json
+
+# Scratch & Dev Utilities
+build-safe.js
+compact*.html
+data-url*.txt
+golf*.js
+measure.js
+play.html
+play-data-uri.txt
+test-*.js
+test-*.html
+user-*.html
+user-*.txt
+decode-test.js
+verify-*.js
+
+# OS & Editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log

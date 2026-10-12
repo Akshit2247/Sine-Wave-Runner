@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sine Drift 3D - Unminified Developer Source</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    #c {
+      display: block;
+      width: 100vw;
+      height: 100vh;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="c"></canvas>
+
+  <script>
+    /**
+     * SINE DRIFT 3D - Harmonic Retro Arcade Runner
+     * Packaged into a self-contained <3KB single-line Data URI for Hack Club Bites.
+     *
+     * Features:
+     * - True 3D perspective projection onto undulating trigonometric terrain
+     * - Dynamic Day / Night cycle with celestial sun radial gradient and starfield
+     * - Web Audio API procedural sound synthesizer (engine hum, coin chime, crash)
+     * - Autonomous roaming drones with lateral bounce
+     * - Golden collectible coins with spinning perspective animation
+     * - Full steering controls: Arrow keys, A/D, pointer/mouse drag, and touch
+     */
+
+    // Mathematical aliases & random generators
+    const M = Math;
+    const R1 = M.random;
+    const canvas = document.getElementById('c');
+    const ctx = canvas.getContext('2d');
+
+    // Audio Context & State
+    let audioCtx = null;
+    let keys = {};
+    let highScore = 0;
+    let time = 0;
+    let worldZ = 0;
+    let width = 0;
+    let height = 0;
+    let horizonY = 0;
+
+    // Lateral drone velocities: static, rightward, leftward
+    const VELOCITIES = [0, 1.4, -1];
+    const randomRange = () => (R1() - 0.5) * 220;
+
+    // Starfield coordinates [0..3]
+    const STAR_INDICES = [0, 1, 2, 3];
+    const starX = STAR_INDICES.map(R1);
+
+    // Coin & Drone Entities
+    let coin = { x: 0, z: 400 };
+    let drones = [];
+    let isStarted = false;
+    let isGameOver = false;
+    let score = 0;
+    let coinCount = 0;
+    let playerX = 0;
+    let tickCount = 0;
+    let forwardSpeed = 0.02;
+
+    const resetCoin = () => {
+      coin = {
+        x: randomRange(),
+        z: 400 + R1() * 300
+      };
+    };
+
+    const resetGame = () => {
+      isStarted = true;
+      isGameOver = false;
+      score = 0;
+      coinCount = 0;
+      playerX = 0;
+      tickCount = 0;
+      forwardSpeed = 0.02;
+
+      // Spawn 4 staggered patrol drones
+      drones = STAR_INDICES.map(i => ({
+        x: i * 60 - 90,
+        z: 180 + i * 90,
+        vx: VELOCITIES[i % 3],
+        type: i % 3
+      }));
+
+      resetCoin();
+    };
+
+    // Initialize in title menu state
+    resetGame();
+    isStarted = false;
+
+    // Procedural Sound Synthesizer (Web Audio API)
+    const playSound = (freq, type = 'sine', volume = 0.25, duration = 0.2) => {
+      if (!audioCtx) return;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      if (type) osc.type = type;
+      osc.frequency.value = freq;
+      gain.gain.value = volume;
+      const endTime = audioCtx.currentTime + duration;
+      gain.gain.linearRampToValueAtTime(0, endTime);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start();
+      osc.stop(endTime);
+    };
+
+    // User Input Listeners
+    window.onkeydown = window.onpointerdown = (e) => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } else if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      if (e.keyCode) keys[e.keyCode] = 1;
+      if (!isStarted || isGameOver) resetGame();
+    };
+
+    window.onkeyup = (e) => {
+      if (e.keyCode) keys[e.keyCode] = 0;
+    };
+
+    window.onpointermove = (e) => {
+      if (e.buttons) playerX += e.movementX;
+    };
+
+    // 3D Perspective Projection with Undulating Sine Wave Terrain
+    const project3D = (x, z) => {
+      const fovScale = 280 / z;
+      const terrainHeight = 26 * M.sin(z * 0.03 + time) * M.cos(x / 67) + 35;
+      return [
+        width / 2 + x * fovScale,
+        horizonY + terrainHeight * fovScale
+      ];
+    };
+
+    const drawGridPoint = (x, z, isMove) => {
+      const [px, py] = project3D(x, z);
+      ctx[isMove ? 'moveTo' : 'lineTo'](px, py);
+    };
+
+    // HUD Text Renderer with Border Stroking
+    const drawMenu = (header, headerColor, sub1, sub2) => {
+      // White outlined frame around start menu
+      if (!header) {
+        ctx.strokeStyle = 'white';
+        ctx.strokeRect(width / 2 - 85, horizonY - 18, 170, 66);
+      }
+      [header, sub1, sub2].forEach((text, i) => {
+        ctx.fillStyle = i ? textContrastColor : headerColor;
+        ctx.fillText(text, width / 2, horizonY + i * 33 - 33);
+      });
+    };
+
+    // Dynamic color tokens
+    let textContrastColor = '#fff';
+
+    // Main Game Loop
+    const gameLoop = () => {
+      time += 0.03;
+      worldZ += forwardSpeed * 20;
+
+      // Day / Night Harmonic Cycle (0 = night, 1 = midday)
+      const dayNight = 0.5 - 0.5 * M.cos(time * 0.2);
+      const nightAlpha = 1 - dayNight;
+
+      // Dynamic Palette Tokens
+      const grayVal = (nightAlpha * 255) | 0;
+      textContrastColor = `rgb(${grayVal},${grayVal},${grayVal})`;
+      const gridLongitudinalColor = `rgb(0,${grayVal},${(grayVal / 2 + 70) | 0})`;
+      const gridLatitudinalColor = `rgb(${((130 + grayVal / 3) | 0)},${(grayVal / 2) | 0},${((130 + grayVal / 3) | 0)})`;
+
+      // Update Simulation when Playing
+      if (isStarted && !isGameOver) {
+        if ((tickCount++ & 3) === 0) {
+          score++;
+          forwardSpeed += 1e-5;
+        }
+
+        // Steer: D / Right Arrow (+6) or A / Left Arrow (-6)
+        if (keys[68] || keys[39]) playerX += 6;
+        if (keys[65] || keys[37]) playerX -= 6;
+        playerX = M.max(-160, M.min(160, playerX));
+
+        // Pulsing engine hum (99Hz - 162Hz triangle wave)
+        if ((tickCount & 15) === 0) {
+          playSound(99 + (tickCount * 9 & 63), 'triangle', 0.05);
+        }
+      }
+
+      // Responsive Canvas Resizing
+      if (width !== window.innerWidth || height !== window.innerHeight) {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+        horizonY = height / 2 - 30;
+        ctx.textAlign = 'center';
+        ctx.font = '18px monospace';
+      }
+
+      // Background Sky: shifts between pale day and deep void
+      const skyLight = 255 - grayVal;
+      ctx.fillStyle = `rgb(${skyLight},${skyLight},${(skyLight * 0.8) | 0})`;
+      ctx.fillRect(0, 0, width, height);
+
+      // Starfield (twinkling at night)
+      ctx.fillStyle = `rgba(255,255,255,${nightAlpha})`;
+      starX.forEach(s => {
+        ctx.fillRect(s * width, (s * horizonY + time * 4) % horizonY, 2, 2);
+      });
+
+      // Celestial Sun / Moon: Radial gradient transitioning between orange and gray
+      const sunY = horizonY - 60;
+      ctx.shadowBlur = 25;
+      ctx.shadowColor = dayNight > 0.5 ? 'gold' : 'gray';
+      const sunGrad = ctx.createRadialGradient(width / 2, sunY, 0, width / 2, sunY, 34);
+      sunGrad.addColorStop(0, `rgb(${180 + 75 * dayNight | 0},160,${180 * nightAlpha | 0})`);
+      sunGrad.addColorStop(1, `rgb(${70 + 150 * dayNight | 0},60,${70 * nightAlpha | 0})`);
+      ctx.fillStyle = sunGrad;
+      ctx.beginPath();
+      ctx.arc(width / 2, sunY, 34, 0, 7);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+
+      // Title Text
+      ctx.fillStyle = textContrastColor;
+      ctx.fillText('SINE DRIFT', width / 2, horizonY - 140);
+
+      // Render 3D Perspective Grid - Longitudinal Columns
+      ctx.strokeStyle = gridLongitudinalColor;
+      for (let x = -160; x <= 160; x += 40) {
+        ctx.beginPath();
+        let isFirst = true;
+        for (let z = 40; z < 1000; z += 30) {
+          const depth = z - (worldZ % 30);
+          if (depth > 20) {
+            drawGridPoint(x, depth, isFirst);
+            isFirst = false;
+          }
+        }
+        ctx.stroke();
+      }
+
+      // Render 3D Perspective Grid - Latitudinal Waves
+      ctx.strokeStyle = gridLatitudinalColor;
+      for (let z = 60; z < 1000; z += 80) {
+        const depth = z - (worldZ % 80);
+        if (depth > 20) {
+          ctx.beginPath();
+          for (let x = -160; x <= 160; x += 40) {
+            drawGridPoint(x, depth, x === -160);
+          }
+          ctx.stroke();
+        }
+      }
+
+      // Active Gameplay Entities (Coins & Drones)
+      if (isStarted) {
+        // Collectible Golden Coin Logic
+        if (!isGameOver) {
+          coin.z -= forwardSpeed * 22;
+          const hitZ = M.abs(coin.z - 65) < 15;
+          const hitX = M.abs(coin.x - playerX) < 25;
+          if (hitZ && hitX) {
+            coinCount++;
+            score += 50;
+            playSound(1568, 'sine', 0.25, 0.15); // High musical bell
+            resetCoin();
+          } else if (coin.z < 20) {
+            resetCoin();
+          }
+        }
+
+        // Render Coin as Spinning 3D Ellipse
+        if (coin.z > 20) {
+          const [cx, cy] = project3D(coin.x, coin.z);
+          const coinRadius = 3360 / coin.z;
+          ctx.fillStyle = 'gold';
+          ctx.beginPath();
+          ctx.ellipse(cx, cy, M.sin(time * 4) ** 2 * coinRadius, coinRadius, 0, 0, 7);
+          ctx.fill();
+        }
+
+        // Autonomous Drone Obstacles
+        drones.forEach(drone => {
+          if (!isGameOver) {
+            drone.z -= forwardSpeed * 22;
+            drone.x += drone.vx;
+            // Lateral boundary bounce
+            if (M.abs(drone.x) > 110) drone.vx *= -1;
+            // Respawn drone ahead
+            if (drone.z < 20) {
+              drone.z = 550;
+              drone.x = randomRange();
+              drone.vx = VELOCITIES[drone.type];
+            }
+            // Collision Detection
+            if (M.abs(drone.z - 68) < 7 && M.abs(drone.x - playerX) < 24) {
+              isGameOver = true;
+              if (score > highScore) highScore = score;
+              playSound(99, 'sawtooth', 0.4, 0.3); // Crash crunch
+            }
+          }
+
+          // Render Faceted Diamond Drone
+          if (drone.z > 20) {
+            const [dx, dy] = project3D(drone.x, drone.z);
+            const size = 3640 / drone.z;
+            const droneColors = [255, drone.type * 60, drone.type * 120].map(v => v * (0.3 + 0.7 * dayNight) | 0);
+            ctx.fillStyle = `rgb(${droneColors.join(',')})`;
+            ctx.beginPath();
+            [-size, size].forEach(w => {
+              ctx.lineTo(dx + w, dy);
+              ctx.lineTo(dx, dy + w);
+            });
+            ctx.fill();
+          }
+        });
+      }
+
+      // Render Player Ship (3D Delta Wing with Twin Thrusters)
+      const [shipX, shipY] = project3D(playerX, 65);
+      ctx.fillStyle = 'gold';
+      ctx.fillRect(shipX - 2, shipY + 4, 4, 4); // Thruster nozzle
+      ctx.strokeStyle = 'white';
+      for (const wingOffset of [-14, 14]) {
+        ctx.beginPath();
+        ctx.moveTo(shipX, shipY - 15);
+        ctx.lineTo(shipX + wingOffset, shipY + 10);
+        ctx.lineTo(shipX, shipY + 3);
+        ctx.fillStyle = isGameOver ? 'red' : wingOffset < 0 ? gridLongitudinalColor : 'blue';
+        ctx.fill();
+        ctx.stroke();
+      }
+
+      // HUD & Status Menus
+      const scoreString = `SC:${score} CN:${coinCount} HI:${highScore}`;
+      if (!isStarted || isGameOver) {
+        if (isGameOver) {
+          drawMenu('CRASH', 'red', scoreString, 'RETRY');
+        } else {
+          drawMenu('', '', 'DODGE DRONES', 'PLAY');
+        }
+      } else {
+        ctx.fillText(scoreString, width / 2, 24);
+      }
+
+      requestAnimationFrame(gameLoop);
+    };
+
+    // Kickoff game loop
+    gameLoop();
+  </script>
+</body>
+</html>
