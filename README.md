@@ -2,7 +2,7 @@
 
 A 3D retro arcade game that runs directly in your browser's address bar as a single Data URI under 3KB. No images, no libraries, no downloads—everything is rendered on the fly using HTML5 Canvas, Web Audio API, and trigonometric math.
 
-![Sine Drift 3D Gameplay Preview](preview.jpg)
+![Sine Drift 3D Gameplay Preview](preview.png)
 
 Sine Drift 3D is built for the **Hack Club Bites** challenge with a strict 3,072-byte size budget. You fly a geometric spacecraft over a rolling 3D sine-wave grid, collect spinning golden coins, and weave through incoming obstacle drones while dynamic day/night lighting shifts overhead.
 
@@ -21,10 +21,10 @@ data:text/html,<body style=margin:0;overflow:hidden;background:black><canvas id=
 Open [src/index.html](src/index.html) in your browser.
 
 ### Controls
-- **Steer Left / Right**: Press **A / D**, use the **Arrow Keys**, or **click and drag** your mouse across the screen.
+- **Steer**: **Click and drag** your mouse (or hold pointer down and move) to steer the spacecraft left and right.
 - **Collect Coins**: Fly directly into spinning gold coins (+50 points each).
 - **Avoid Drones**: Dodge roaming hunter drones that bounce laterally across lanes.
-- **Start / Restart**: Press any key or click anywhere on the screen.
+- **Start / Restart**: Click anywhere on the screen (or press any key) to start or retry.
 - **Sound**: Procedural audio synthesizer begins automatically on your first interaction.
 
 ---
@@ -66,7 +66,7 @@ Running `node build.mjs` verifies the budget and writes the address-bar string t
 ├── dist/
 │   ├── one-line-game.html   # Production single-line HTML
 │   └── uri.txt              # Address-bar ready Data URI (<3KB)
-├── preview.jpg              # Gameplay visual
+├── preview.png              # Gameplay visual
 ├── build.mjs                # Size verification and uri.txt generator
 ├── package.json             # NPM metadata and scripts
 └── README.md                # Documentation
